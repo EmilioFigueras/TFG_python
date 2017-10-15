@@ -1,0 +1,41 @@
+<info>
+	 <charset>iso-8859-15</charset>
+
+	 <database host="localhost" db="tfg_marca" user="admin" password="admin">
+	 	<rowsProduct rowName="name" type="VARCHAR" size="128"></rowsProduct>
+
+	 	<rowsComment rowName="nick" type="VARCHAR" size="32"></rowsComment>
+	 	<rowsComment rowName="comment" type="TEXT" size="" isText="true"></rowsComment>
+	 	<rowsComment rowName="date" type="VARCHAR" size="32"></rowsComment>
+
+	 </database>
+
+	 <url urlBase="http://www.marca.com" urlProducts="http://www.marca.com/futbol/cadiz.html" urlComments="http://www.marca.com/servicios/noticias/comentarios/comunidad/listar.html?noticia={numberproduct}&amp;portal=5&amp;pagina={npage_comments}">
+
+	 </url>
+
+	 <urlProducts categorypage_max=""> <!-- 0 = obtener ID en enlace a obtener || 1 = Obtener ID aqui || CREO QUE MEJOR HACER SIEMPRE LA OPCION 0 -->
+	 	<!--  Indicar como llegar hasta el enlace (atributo href necesario) para cada producto -->
+	 	<linkProduct tag="header" attr="class" valueAttr="mod-header"></linkProduct>
+	 	<linkProduct tag="h3" attr="class" valueAttr="mod-title"></linkProduct>
+		<linkProductFinal tag="a" attr="itemprop" valueAttr="url" attrGoal="href">
+
+	 	<!-- Indicar los atributos que se desean guardar de la web de cada producto -->
+	 	<attributeProducts tag="h1" attr="class" valueAttr="js-headline izquierda" tagID="false" rowName="name"></attributeProducts>
+
+
+	 	<!-- Indicar como llegar hasta la ID necesaria para entrar en los comentarios (el numberproduct) -->
+	 	<idProduct tag="aside" attr="class" valueAttr="aside-comments"></idProduct>
+	 	<idProduct tag="div" attr="id" valueAttr="comentarios_interior"></idProduct>
+	 	<idProduct tag="form" attr="id" valueAttr="formulario_paginar_comentarios"></idProduct>
+	 	<idProductFinal tag="input" attr="name" valueAttr="noticia" attrGoal="value"><idProductFinal>
+
+	 </urlProducts>
+
+
+	 <urlComments>
+	 	<attributeComments tag="span" attr="class" valueAttr="nombre_usuario" tagID="false" rowName="nick"></attributeComments>
+	 	<attributeComments tag="span" attr="class" valueAttr="fecha" tagID="false" rowName="date"></attributeComments>
+	 	<attributeComments tag="div" attr="class" valueAttr="comentario" tagID="false" rowName="comment"></attributeComments>
+	 </urlComments>
+</info>

@@ -1,0 +1,53 @@
+<info>
+	 <charset>utf-8</charset>
+	
+	 <database host="localhost" db="tfg_prueba" user="admin" password="admin">
+	 	<rowsProduct rowName="name" type="VARCHAR" size="128"></rowsProduct>
+	 	<rowsProduct rowName="price" type="FLOAT" size="10"></rowsProduct>
+	 	<rowsProduct rowName="brand" type="VARCHAR" size="64"></rowsProduct>
+
+	 	<rowsComment rowName="nick" type="VARCHAR" size="32"></rowsComment>
+	 	<rowsComment rowName="comment" type="TEXT" size="" isText="true"></rowsComment>
+	 	<rowsComment rowName="rating" type="FLOAT" size=""></rowsComment>
+	 	<rowsComment rowName="date" type="VARCHAR" size="32"></rowsComment>
+
+	 </database>
+
+	 <url urlBase="https://www.pccomponentes.com" urlProducts="https://www.pccomponentes.com/listado/ajax?page={npage_products}&amp;order=new&amp;idFamilies[]={categorypage}" urlComments="https://www.pccomponentes.com/a/comments?page={npage_comments}&amp;order=new&amp;idArticle={numberproduct}">
+	 </url>
+
+
+
+	 <urlProducts categorypage_max="3"> <!-- categorypage_max es la ultima pagina a la que debe llegar -->
+	 	<!--  Indicar como llegar hasta el enlace (atributo href necesario) para cada producto -->
+	 	<linkProduct tag="div" attr="class" valueAttr="tarjeta-articulo__elementos-basicos"></linkProduct>
+	 	<linkProduct tag="header" attr="class" valueAttr="tarjeta-articulo__nombre"></linkProduct>
+	 	<linkProduct tag="h3" attr="itemprop" valueAttr="name"></linkProduct>
+	 	<linkProductFinal tag="a" attr="class" valueAttr="GTM-productClick enlace-disimulado" attrGoal="href">
+
+	 	<!-- Indicar los atributos que se desean guardar de la web de cada producto -->
+	 	<!-- ID 
+	 	<!-- Nombre -->
+	 	<attributeProducts tag="h1" attr="itemprop" valueAttr="name" tagID="false" rowName="name"></attributeProducts>
+	 	<!-- Precio -->
+	 	<attributeProducts tag="span" attr="class" valueAttr="baseprice" tagID="false" rowName="price"></attributeProducts>
+	 	<!-- Marca -->
+	 	<attributeProducts tag="a" attr="itemprop" valueAttr="brand" tagID="false" rowName="brand"></attributeProducts>
+
+
+
+	 	<!-- Indicar como llegar hasta la ID necesaria para entrar en los comentarios (el numberproduct) -->
+	 	<idProduct tag="body" attr="id" valueAttr="ficha-producto"></idProduct>
+	 	<idProductFinal tag="div" attr="id" valueAttr="contenedor-principal" attrGoal="data-id"><idProductFinal>
+
+	 <urlProducts/>
+
+
+	 <urlComments>
+	 	<attributeComments tag="p" attr="class" valueAttr="user-data m-b-0" tagID="false" rowName="nick"></attributeComments>
+	 	<attributeComments tag="div" attr="class" valueAttr="opinion" tagID="false" rowName="comment"></attributeComments>
+	 	<attributeComments tag="input" attr="class" valueAttr="rating-input" tagID="value" rowName="rating"></attributeComments>
+	 	<attributeComments tag="p" attr="class" valueAttr="fecha pull-sm-right hidden-sm-down m-b-0" tagID="false" rowName="date"></attributeComments>
+
+	 </urlComments>
+</info> 
