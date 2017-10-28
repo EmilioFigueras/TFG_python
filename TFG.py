@@ -515,8 +515,8 @@ def main():
 if __name__ == '__main__':
 	main()
 
-#Pruebas
 
+#Pruebas
 #Argumentos basicos
 class ArgTest(TestCase):
 
@@ -543,6 +543,7 @@ class ArgTest(TestCase):
 		self.assertFalse(verbose)
 		self.assertEqual(xpath, 'info.xml')
 
+	#Se ejecuta despues de cada prueba
 	def tearDown(self):
 		sys.argv = []
 
@@ -550,7 +551,7 @@ class ArgTest(TestCase):
 #Base de datos
 class Arg_DatabaseTest(TestCase):
 
-	#Creacion de base de datos con datos correctos
+	#Creacion de base de datos con datos correctos y sobreescritura de base de datos
 	def test_db_ok(self):
 		#Preparacion de prueba
 		sys.argv = ['TFG.py', '-x', 'test.xml','-c']
@@ -567,14 +568,15 @@ class Arg_DatabaseTest(TestCase):
 		arbol = ET.ElementTree(t_info)
 		arbol.write("test.xml")	
 
-
-		i=0
+		#Creacion inicial de la base de datos
 		with self.assertRaises(SystemExit) as cm:
-			for param in sys.argv:
-				ret = options(param, i)
-				if(ret == 1):
-					break
-				i+=1
+			main()
+		self.assertEqual(cm.exception.code, 0)
+
+		#Sobreescritura de la base de datos
+		sys.argv = ['TFG.py', '-x', 'test.xml','-e']
+		with self.assertRaises(SystemExit) as cm:
+			main()
 		self.assertEqual(cm.exception.code, 0)
 
 		os.remove("test.xml")
@@ -586,13 +588,8 @@ class Arg_DatabaseTest(TestCase):
 		sys.argv = ['TFG.py', '-x', 'test_exist.xml','-c']
 
 		#Archivo no encontrado		
-		i=0
 		with self.assertRaises(SystemExit) as cm:
-			for param in sys.argv:
-				ret = options(param, i)
-				if(ret == 1):
-					break
-				i+=1
+			main()
 		self.assertEqual(cm.exception.code, 1)
 
 
@@ -609,16 +606,12 @@ class Arg_DatabaseTest(TestCase):
 		arbol.write("test_2.xml")
 
 		#Dato en blanco		
-		i=0
 		with self.assertRaises(SystemExit) as cm:
-			for param in sys.argv:
-				ret = options(param, i)
-				if(ret == 1):
-					break
-				i+=1
+			main()
 		self.assertEqual(cm.exception.code, 1)
 		os.remove("test_2.xml")
 
+	#Se ejecuta despues de cada prueba
 	def tearDown(self):
 		sys.argv = []
 		
@@ -643,12 +636,9 @@ class FailTest(TestCase):
 		arbol = ET.ElementTree(t_info)
 		arbol.write("test.xml")	
 
-		i=0
 		with self.assertRaises(SystemExit) as cm:
 			main()
 		self.assertEqual(cm.exception.code, 1)
-
-		os.remove("test.xml")
 
 	#Prueba que el XML contiene urlBase
 	def test_urlBase(self):
@@ -664,17 +654,14 @@ class FailTest(TestCase):
 		t_rowsComment2 = ET.SubElement(t_database, "rowsComment", rowName="comment", type="TEXT", size="", isText="true") #No ponemos a true isText
 		t_rowsComment3 = ET.SubElement(t_database, "rowsComment", rowName="date", type="VARCHAR", size="32")
 
-		t_url = ET.SubElement(t_info, "url", urlBase="", urlProducts="http://www.marca.com/futbol/cadiz.html", urlComments="http://www.marca.com/servicios/noticias/comentarios/comunidad/listar.html?noticia={numberproduct}&amp;portal=5&amp;pagina={npage_comments}")
+		t_url = ET.SubElement(t_info, "url", urlBase="", urlProducts="http://www.marca.com/futbol/cadiz.html", urlComments="http://www.marca.com/servicios/noticias/comentarios/comunidad/listar.html?noticia={numberproduct}&portal=5&pagina={npage_comments}")
 
 		arbol = ET.ElementTree(t_info)
 		arbol.write("test.xml")	
 
-		i=0
 		with self.assertRaises(SystemExit) as cm:
 			main()
 		self.assertEqual(cm.exception.code, 1)
-
-		os.remove("test.xml")
 
 	#Prueba que el XML contiene urlProducts
 	def test_urlProducts(self):
@@ -690,19 +677,16 @@ class FailTest(TestCase):
 		t_rowsComment2 = ET.SubElement(t_database, "rowsComment", rowName="comment", type="TEXT", size="", isText="true") #No ponemos a true isText
 		t_rowsComment3 = ET.SubElement(t_database, "rowsComment", rowName="date", type="VARCHAR", size="32")
 
-		t_url = ET.SubElement(t_info, "url", urlBase="http://www.marca.com", urlComments="http://www.marca.com/servicios/noticias/comentarios/comunidad/listar.html?noticia={numberproduct}&amp;portal=5&amp;pagina={npage_comments}")
+		t_url = ET.SubElement(t_info, "url", urlBase="http://www.marca.com", urlComments="http://www.marca.com/servicios/noticias/comentarios/comunidad/listar.html?noticia={numberproduct}&portal=5&pagina={npage_comments}")
 
 		arbol = ET.ElementTree(t_info)
 		arbol.write("test.xml")	
 
-		i=0
 		with self.assertRaises(SystemExit) as cm:
 			main()
 		self.assertEqual(cm.exception.code, 1)
 
-		os.remove("test.xml")
-
-	#Prueba que el XML contiene urlCommments
+	#Prueba que el XML contiene urlComments
 	def test_urlComments(self):
 		#Preparacion de prueba
 		sys.argv = ['TFG.py', '-x', 'test.xml']
@@ -721,9 +705,148 @@ class FailTest(TestCase):
 		arbol = ET.ElementTree(t_info)
 		arbol.write("test.xml")	
 
-		i=0
 		with self.assertRaises(SystemExit) as cm:
 			main()
 		self.assertEqual(cm.exception.code, 1)
 
+	#Se ejecuta despues de cada prueba
+	def tearDown(self):
 		os.remove("test.xml")
+		sys.argv = []
+
+
+#Comprueba el funcionamiento de la funcion setUp
+class RepitTest(TestCase):
+	def setUp(self):
+		#Creamos el fichero XML de entrada
+		t_info = ET.Element("info")
+		t_charset = ET.SubElement(t_info, "charset")
+		t_charset.text = "utf-8"
+		t_database = ET.SubElement(t_info, "database", host="localhost", db="tfg_test", user="admin", password="admin")
+		t_rowsProduct1 = ET.SubElement(t_database, "rowsProduct", rowName="name", type="VARCHAR", size="128")
+		t_rowsProduct2 = ET.SubElement(t_database, "rowsProduct", rowName="price", type="FLOAT", size="10")
+		t_rowsComment1 = ET.SubElement(t_database, "rowsComment", rowName="nick", type="VARCHAR", size="32")
+		t_rowsComment2 = ET.SubElement(t_database, "rowsComment", rowName="comment", type="TEXT", size="", isText="true") #No ponemos a true isText
+		t_rowsComment3 = ET.SubElement(t_database, "rowsComment", rowName="date", type="VARCHAR", size="32")
+
+		arbol = ET.ElementTree(t_info)
+		arbol.write("test.xml")
+
+		#Creamos la base de datos
+		sys.argv = ['TFG.py', '-x', 'test.xml', "-e"]
+		with self.assertRaises(SystemExit) as cm:
+			main()
+		self.assertEqual(cm.exception.code, 0)
+
+		#Insertamos un producto
+		query = "INSERT INTO products VALUES('1', '123456', 'Producto de prueba', '0.0');"
+		result = run_query(query)
+
+		#Insertamo el comentario que se utilizara para probar
+		query = "INSERT INTO comments VALUES('1', '123456', 'nick_prueba', 'Este comentario es una prueba de verificación para el método que comprueba si hay comentarios repetidos.', '09/05/1945');"
+		result = run_query(query)
+
+		#Definimos que los comentarios se guardaran en el atributo comment
+		global isText
+		isText = "comment"
+
+	def test_repit(self):
+		#Debe dar verdadero
+		repit = is_repit('Este comentario es una prueba de verificación para el método que comprueba si hay comentarios repetidos.', '123456')
+		self.assertTrue(repit)
+
+		#Debe dar falso por el id del product
+		repit = is_repit('Este comentario es una prueba de verificación para el método que comprueba si hay comentarios repetidos.', '213456')
+		self.assertFalse(repit)
+
+		#Debe dar falso por el comentario
+		repit = is_repit('Este comentario es una prueba de verificacion para el metodo que comprueba si hay comentarios repetidos.', '123456')
+		self.assertFalse(repit)
+
+	#Se ejecuta despues de cada prueba
+	def tearDown(self):
+		os.remove("test.xml")
+		query = "DROP TABLE analysis, comments, products, reports"
+		run_query(query)
+		sys.argv = []
+
+
+
+#Test completo para el dia 22 de octubre de 2017
+class CompleteTest(TestCase):
+
+	#Preparamos el entorno
+	def setUp(self):
+		#Creamos el fichero XML de entrada
+		t_info = ET.Element("info")
+		t_charset = ET.SubElement(t_info, "charset")
+		t_charset.text = "utf-8"
+		t_database = ET.SubElement(t_info, "database", host="localhost", db="tfg_test", user="admin", password="admin")
+		t_rowsProduct1 = ET.SubElement(t_database, "rowsProduct", rowName="name", type="VARCHAR", size="128")
+		t_rowsProduct2 = ET.SubElement(t_database, "rowsProduct", rowName="price", type="FLOAT", size="10")
+		t_rowsComment1 = ET.SubElement(t_database, "rowsComment", rowName="nick", type="VARCHAR", size="32")
+		t_rowsComment2 = ET.SubElement(t_database, "rowsComment", rowName="comment", type="TEXT", size="", isText="true") #No ponemos a true isText
+		t_rowsComment3 = ET.SubElement(t_database, "rowsComment", rowName="date", type="VARCHAR", size="32")
+
+		t_url = ET.SubElement(t_info, "url", urlBase="http://www.marca.com", urlProducts="http://www.marca.com/futbol/cadiz.html", urlComments="http://www.marca.com/servicios/noticias/comentarios/comunidad/listar.html?noticia={numberproduct}&portal=5&pagina={npage_comments}")
+		
+		t_urlProducts = ET.SubElement(t_info, "urlProducts", categorypage_max="")
+		t_linkProduct1 = ET.SubElement(t_urlProducts, "linkProduct", tag="header", attr="class", valueAttr="mod-header")
+		t_linkProduct2 = ET.SubElement(t_urlProducts, "linkProduct", tag="h3", attr="class", valueAttr="mod-title")
+		t_linkProductFinal = ET.SubElement(t_urlProducts, "linkProductFinal", tag="a", attr="itemprop", valueAttr="url", attrGoal="href")
+
+		t_attributeProducts = ET.SubElement(t_urlProducts, "attributeProducts", tag="h1", attr="class", valueAttr="js-headline izquierda", tagID="false", rowName="name")
+
+		t_idProduct1 = ET.SubElement(t_urlProducts, "idProduct", tag="aside", attr="class", valueAttr="aside-comments right-panel comments-panel")
+		t_idProduct2 = ET.SubElement(t_urlProducts, "idProduct", tag="div", attr="class", valueAttr="no-visible comentarios comentarios-retro")
+		t_idProductFinal = ET.SubElement(t_urlProducts, "idProductFinal", tag="div", attr="class", valueAttr="js-comments-container", attrGoal="data-commentid")
+
+
+		t_urlComments = ET.SubElement(t_info, "urlComments")
+		t_attributeComments1 = ET.SubElement(t_urlComments, "attributeComments", tag="span", attr="class", valueAttr="nombre_usuario", tagID="false", rowName="nick")
+		t_attributeComments2 = ET.SubElement(t_urlComments, "attributeComments", tag="span", attr="class", valueAttr="fecha", tagID="false", rowName="date")
+		t_attributeComments3 = ET.SubElement(t_urlComments, "attributeComments", tag="div", attr="class", valueAttr="comentario", tagID="false", rowName="comment")
+		
+		arbol = ET.ElementTree(t_info)
+		arbol.write("test.xml")
+
+		#Creamos la base de datos
+		sys.argv = ['TFG.py', '-x', 'test.xml', "-e"]
+		with self.assertRaises(SystemExit) as cm:
+			main()
+		self.assertEqual(cm.exception.code, 0)
+
+	#Dado un archivo de entrada completo deberia rellenar la base de datos
+	def test_complete_ok(self):
+		#Comprobamos que la base de datos esta vacia
+		query = "Select count(c.autoid), count(p.autoid) from comments as c join products as p on c.idProduct = p.id"
+		result = run_query(query)
+		for row in result:
+			count_comment = row[0]
+			count_product = row[1]
+
+		#Comprobamos que no hay comentarios ni productos antes de comenzar la pruebas
+		self.assertEqual(count_comment, 0)
+		self.assertEqual(count_product, 0)
+
+		#Ejecutamos el programa con el fichero recien creado y activando el modo detallado
+		sys.argv = ['TFG.py', '-x', 'test.xml', "-v"]
+		main()
+
+		#Volvemos a comprobar el numero de comentarios y productos ahora
+		query = "Select count(c.autoid), count(p.autoid) from comments as c join products as p on c.idProduct = p.id"
+		result = run_query(query)
+		for row in result:
+			count_comment = row[0]
+			count_product = row[1]
+
+		#Comprobamos que se ha introducido correctamente comentarios y productos
+		self.assertGreater(count_comment, 0)
+		self.assertGreater(count_product, 0)
+
+	#Se ejecuta despues de cada prueba
+	def tearDown(self):
+		os.remove("test.xml")
+		query = "DROP TABLE analysis, comments, products, reports"
+		run_query(query)
+		sys.argv = []

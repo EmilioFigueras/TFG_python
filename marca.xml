@@ -25,11 +25,13 @@
 
 
 	 	<!-- Indicar como llegar hasta la ID necesaria para entrar en los comentarios (el numberproduct) -->
-	 	<idProduct tag="aside" attr="class" valueAttr="aside-comments"></idProduct>
+	 	<!-- <idProduct tag="aside" attr="class" valueAttr="aside-comments"></idProduct>
 	 	<idProduct tag="div" attr="id" valueAttr="comentarios_interior"></idProduct>
 	 	<idProduct tag="form" attr="id" valueAttr="formulario_paginar_comentarios"></idProduct>
-	 	<idProductFinal tag="input" attr="name" valueAttr="noticia" attrGoal="value"><idProductFinal>
-
+	 	<idProductFinal tag="input" attr="name" valueAttr="noticia" attrGoal="value"><idProductFinal> -->
+	 	<idProduct tag="aside" attr="class" valueAttr="aside-comments right-panel comments-panel"></idProduct>
+	 	<idProduct tag="div" attr="class" valueAttr="no-visible comentarios comentarios-retro"></idProduct>
+	 	<idProductFinal tag="div" attr="class" valueAttr="js-comments-container" attrGoal="data-commentid"></idProductFinal>		
 	 </urlProducts>
 
 
