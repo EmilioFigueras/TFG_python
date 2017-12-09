@@ -21,7 +21,7 @@
 		<linkProductFinal tag="a" attr="itemprop" valueAttr="url" attrGoal="href">
 
 	 	<!-- Indicar los atributos que se desean guardar de la web de cada producto -->
-	 	<attributeProducts tag="h1" attr="class" valueAttr="js-headline izquierda" tagID="false" rowName="name"></attributeProducts>
+	 	<attributeProducts tag="meta" attr="name" valueAttr="twitter:title" tagID="false" rowName="name"></attributeProducts>
 
 
 	 	<!-- Indicar como llegar hasta la ID necesaria para entrar en los comentarios (el numberproduct) -->
