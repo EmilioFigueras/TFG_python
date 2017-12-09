@@ -1,7 +1,7 @@
 <info>
 	 <charset>iso-8859-15</charset>
 
-	 <database host="localhost" db="tfg_marca" user="admin" password="admin">
+	 <database host="localhost" db="tfg_marca" user="admin" password="papagallo">
 	 	<rowsProduct rowName="name" type="VARCHAR" size="128"></rowsProduct>
 
 	 	<rowsComment rowName="nick" type="VARCHAR" size="32"></rowsComment>
