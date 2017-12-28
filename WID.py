@@ -27,7 +27,7 @@ VERBOSE = False
 def help_info():
 	"""Help menu."""
 	print("Web Info Download")
-	print("usage: python download_mod.py [-h] [-v] [-x xPath] [-d] [-c] [-e]")
+	print("usage: python WID.py [-h] [-v] [-x xPath] [-d] [-c] [-e]")
 	print("Command Summary:")
 	print("-h 		help")
 	print("-v 		verbose mode")
