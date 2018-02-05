@@ -5,6 +5,7 @@
 # Incluimos los módulos necesarios.
 #-----------------------------------------------------------------------------
 from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 import sys
 import os.path
 import xml.etree.cElementTree as ET #XML Test
@@ -313,38 +314,47 @@ def set_links(urlProducts, urlBase, cat_max, tags, final):
 			if VERBOSE:
 				print("URL ini: " + url)
 			req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-			soup = BeautifulSoup(urlopen(req), "html5lib", from_encoding=CHARSET)
-			j = 1
-			soup = soup.findAll(tags[0]['tag'], {tags[0]['attr']:tags[0]['valueAttr']})
-			#Si no encontramos ningun enlace
-			if not soup:
-				endPage = True
-			while j < len(tags) and not endPage:
+
+			try:
+				soup = BeautifulSoup(urlopen(req), "html5lib", from_encoding=CHARSET)
+			except HTTPError as e:
+				print('The server couldn\'t fulfill the request.')
+				print('Error code: ', e.code)
+			except URLError as e:
+			 	print('We failed to reach a server.')
+			 	print('Reason: ', e.reason)
+			else:
+				j = 1
+				soup = soup.findAll(tags[0]['tag'], {tags[0]['attr']:tags[0]['valueAttr']})
+				#Si no encontramos ningun enlace
+				if not soup:
+					endPage = True
+				while j < len(tags) and not endPage:
+					for row in soup:
+						row = row.findAll(tags[j]['tag'], {tags[j]['attr']:tags[j]['valueAttr']})
+					j += 1
+
+				#Si no encontramos ningun enlace
+				if not soup or onePage:
+					endPage = True
+
 				for row in soup:
-					row = row.findAll(tags[j]['tag'], {tags[j]['attr']:tags[j]['valueAttr']})
-				j += 1
+					res_link = row.find(final['tag'], {final['attr']:final['valueAttr']})
+					link = res_link[final['attrGoal']]
+					#Se analiza el formato del enlace obtenido
+					if link.find("http://") != -1 or link.find("https://") != -1 or link.find("www.", 0, 6) != -1:
+						product_url = link
+					elif link[0] == '/':
+						product_url = urlBase + link
+					else:
+						product_url = urlBase + "/" + link
 
-			#Si no encontramos ningun enlace
-			if not soup or onePage:
-				endPage = True
+					if VERBOSE:
+						print("URL product: " + product_url)
+					link_in(product_url)
 
-			for row in soup:
-				res_link = row.find(final['tag'], {final['attr']:final['valueAttr']})
-				link = res_link[final['attrGoal']]
-				#Se analiza el formato del enlace obtenido
-				if link.find("http://") != -1 or link.find("https://") != -1 or link.find("www.", 0, 6) != -1:
-					product_url = link
-				elif link[0] == '/':
-					product_url = urlBase + link
-				else:
-					product_url = urlBase + "/" + link
-
-				if VERBOSE:
-					print("URL product: " + product_url)
-				link_in(product_url)
-
-			numPage += 1 #Pasamos pagina
-			#endPage=True #PRUEBAS
+				numPage += 1 #Pasamos pagina
+				#endPage=True #PRUEBAS
 
 #Entrar en el enlace de un producto
 def link_in(url):
@@ -353,69 +363,76 @@ def link_in(url):
 
 	#Abrimos la web del producto
 	req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-	soup = BeautifulSoup(urlopen(req), "html5lib", from_encoding=CHARSET)
+	try:
+		soup = BeautifulSoup(urlopen(req), "html5lib", from_encoding=CHARSET)
+	except HTTPError as e:
+		print('The server couldn\'t fulfill the request.')
+		print('Error code: ', e.code)
+	except URLError as e:
+	 	print('We failed to reach a server.')
+	 	print('Reason: ', e.reason)
+	else:
+		#Buscamos la ID del producto
+		idsProduct_param = XMLFILE.findAll("idProduct")
+		idsProductFinal_param = XMLFILE.find("idProductFinal")
 
-	#Buscamos la ID del producto
-	idsProduct_param = XMLFILE.findAll("idProduct")
-	idsProductFinal_param = XMLFILE.find("idProductFinal")
-
-	#Profundizamos en las etiquetas de la web tanto como nos indiquen en el archivo XML
-	i = 1
-	soupID = soup.findAll(idsProduct_param[0]['tag'], {idsProduct_param[0]['attr']:idsProduct_param[0]['valueAttr']})
-	while i < len(idsProduct_param):
-		for row in soupID:
-			row = row.findAll(idsProduct_param[i]['tag'], {idsProduct_param[i]['attr']:idsProduct_param[i]['valueAttr']})
-		i += 1
-
-	#Obtenemos el atributo que estamos buscando
-	for row in soupID:
-		res_id = row.find(idsProductFinal_param['tag'], {idsProductFinal_param['attr']:idsProductFinal_param['valueAttr']})
-		idProduct = res_id[idsProductFinal_param['attrGoal']]
-
-	if idProduct != "False": #Si hemos entrado en la pagina correcta
-		#Obtenemos la informacion del producto que queremos almacenar
-		attrProduct_param = XMLFILE.findAll("attributeProducts")
-		i = 0
-		name_row = "id, "
-		value_row = "'" + idProduct + "', '" #Empieza con comilla simple
-		while i < len(attrProduct_param):
-			if VERBOSE:
-				print("Attribute: " + attrProduct_param[i]['valueAttr'])
-			soupAttr = soup.find(attrProduct_param[i]['tag'], {attrProduct_param[i]['attr']:attrProduct_param[i]['valueAttr']})
-			if attrProduct_param[i]['tagID'] == "false" or attrProduct_param[i]['tagID'] == "":
-				attribute = soupAttr.get_text()
-			else:
-				attribute = soupAttr[attrProduct_param[i]['tagID']]
-
-			attribute = attribute.replace(",", ".") #Cambiamos las comas por los puntos si las hubiera
-			attribute = attribute.replace("'", "") #Eliminamos las comillas simples
-			attribute = attribute.strip() #Eliminamos espacios en blancos a la derecha e izquierda
-
-			#Si es la clave primaria, la guardamos
-			#if(attrProduct_param[i]['rowName'] == primaryKey):
-			#	idPrimaryKey = attribute
-
-			#Ahora insertamos el atributo en la base de datos
-			#Buscamos el nombre de la columna a insertar
-			name_row = name_row + attrProduct_param[i]['rowName']
-			#Buscamos el valor a insertar en esa columna
-			value_row = value_row + attribute
+		#Profundizamos en las etiquetas de la web tanto como nos indiquen en el archivo XML
+		i = 1
+		soupID = soup.findAll(idsProduct_param[0]['tag'], {idsProduct_param[0]['attr']:idsProduct_param[0]['valueAttr']})
+		while i < len(idsProduct_param):
+			for row in soupID:
+				row = row.findAll(idsProduct_param[i]['tag'], {idsProduct_param[i]['attr']:idsProduct_param[i]['valueAttr']})
 			i += 1
-			if i == len(attrProduct_param):
-				name_row = name_row + ")"
-				value_row = value_row + "')"
-			else:
-				name_row = name_row + ", "
-				value_row = value_row + "', '" #Importante las comillas simples para que los espacios funcionen al insertar
 
-		#Con los string obtenidos creamos la query final
-		query = "REPLACE INTO products(" + name_row + " VALUES (" + value_row
-		if VERBOSE:
-			print("Query product: " + query)
-		run_query(query) #Ejecutamos la consulta
+		#Obtenemos el atributo que estamos buscando
+		for row in soupID:
+			res_id = row.find(idsProductFinal_param['tag'], {idsProductFinal_param['attr']:idsProductFinal_param['valueAttr']})
+			idProduct = res_id[idsProductFinal_param['attrGoal']]
 
-		#Obtenemos los comentarios del producto
-		link_comments(idProduct)
+		if idProduct != "False": #Si hemos entrado en la pagina correcta
+			#Obtenemos la informacion del producto que queremos almacenar
+			attrProduct_param = XMLFILE.findAll("attributeProducts")
+			i = 0
+			name_row = "id, "
+			value_row = "'" + idProduct + "', '" #Empieza con comilla simple
+			while i < len(attrProduct_param):
+				if VERBOSE:
+					print("Attribute: " + attrProduct_param[i]['valueAttr'])
+				soupAttr = soup.find(attrProduct_param[i]['tag'], {attrProduct_param[i]['attr']:attrProduct_param[i]['valueAttr']})
+				if attrProduct_param[i]['tagID'] == "false" or attrProduct_param[i]['tagID'] == "":
+					attribute = soupAttr.get_text()
+				else:
+					attribute = soupAttr[attrProduct_param[i]['tagID']]
+
+				attribute = attribute.replace(",", ".") #Cambiamos las comas por los puntos si las hubiera
+				attribute = attribute.replace("'", "") #Eliminamos las comillas simples
+				attribute = attribute.strip() #Eliminamos espacios en blancos a la derecha e izquierda
+
+				#Si es la clave primaria, la guardamos
+				#if(attrProduct_param[i]['rowName'] == primaryKey):
+				#	idPrimaryKey = attribute
+
+				#Ahora insertamos el atributo en la base de datos
+				#Buscamos el nombre de la columna a insertar
+				name_row = name_row + attrProduct_param[i]['rowName']
+				#Buscamos el valor a insertar en esa columna
+				value_row = value_row + attribute
+				i += 1
+				if i == len(attrProduct_param):
+					name_row = name_row + ")"
+					value_row = value_row + "')"
+				else:
+					name_row = name_row + ", "
+					value_row = value_row + "', '" #Importante las comillas simples para que los espacios funcionen al insertar
+
+			#Con los string obtenidos creamos la query final
+			query = "REPLACE INTO products(" + name_row + " VALUES (" + value_row
+			if VERBOSE:
+				print("Query product: " + query)
+			run_query(query) #Ejecutamos la consulta
+
+			#Obtenemos los comentarios del producto
+			link_comments(idProduct)
 
 #Obtiene la informacion de cada comentario
 def link_comments(idProduct):
@@ -428,73 +445,81 @@ def link_comments(idProduct):
 		url = urlComments.format(npage_comments=str(i), numberproduct=str(idProduct))
 		#Abrimos la web del comentario
 		req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-		soup = BeautifulSoup(urlopen(req), "html5lib", from_encoding=CHARSET)
-		attrComment_param = XMLFILE.findAll("attributeComments")
+		try:
+			soup = BeautifulSoup(urlopen(req), "html5lib", from_encoding=CHARSET)
+		except HTTPError as e:
+			print('The server couldn\'t fulfill the request.')
+			print('Error code: ', e.code)
+		except URLError as e:
+		 	print('We failed to reach a server.')
+		 	print('Reason: ', e.reason)
+		else:
+			attrComment_param = XMLFILE.findAll("attributeComments")
 
-		if VERBOSE:
-			print("URL comments: " + url)
+			if VERBOSE:
+				print("URL comments: " + url)
 
-		#Inicializamos las listas donde iran las querys
-		name_row = [] #Aqui iran los nombres de las columnas
-		value_row = [] #Aqui iran el valor de cada columna
-		inserts = [] #Aqui se indicara si el dato ya esta en la base de datos
-		num_comments = len(soup.findAll(attrComment_param[0]['tag'], {attrComment_param[0]['attr']:attrComment_param[0]['valueAttr']}))
+			#Inicializamos las listas donde iran las querys
+			name_row = [] #Aqui iran los nombres de las columnas
+			value_row = [] #Aqui iran el valor de cada columna
+			inserts = [] #Aqui se indicara si el dato ya esta en la base de datos
+			num_comments = len(soup.findAll(attrComment_param[0]['tag'], {attrComment_param[0]['attr']:attrComment_param[0]['valueAttr']}))
 
-		#Si no hay comentarios salimos
-		if num_comments < 1:
-			break
+			#Si no hay comentarios salimos
+			if num_comments < 1:
+				break
 
-		#Inicializamos los vectores a utilizar
-		q = 0
-		while q < num_comments:
-		#for q in range(num_comments):
-			name_row.append("idProduct, ")
-			value_row.append("'" + idProduct + "', '")
-			inserts.append("Insert")
-			q += 1
+			#Inicializamos los vectores a utilizar
+			q = 0
+			while q < num_comments:
+			#for q in range(num_comments):
+				name_row.append("idProduct, ")
+				value_row.append("'" + idProduct + "', '")
+				inserts.append("Insert")
+				q += 1
 
-		j = 0
-		while j < len(attrComment_param):
-			soupAttr = soup.findAll(attrComment_param[j]['tag'], {attrComment_param[j]['attr']:attrComment_param[j]['valueAttr']})
-			for (k, row) in enumerate(soupAttr):
-				if attrComment_param[j]['tagID'] == "false" or attrComment_param[j]['tagID'] == "":
-					attribute = row.get_text()
+			j = 0
+			while j < len(attrComment_param):
+				soupAttr = soup.findAll(attrComment_param[j]['tag'], {attrComment_param[j]['attr']:attrComment_param[j]['valueAttr']})
+				for (k, row) in enumerate(soupAttr):
+					if attrComment_param[j]['tagID'] == "false" or attrComment_param[j]['tagID'] == "":
+						attribute = row.get_text()
+					else:
+						attribute = row[attrComment_param[j]['tagID']]
+
+					attribute = attribute.replace(",", ".") #Cambiamos las comas por los puntos si las hubiera
+					attribute = attribute.replace("'", "") #Cambiamos las comillas simples por nada
+					attribute = attribute.strip() #Eliminamos espacios en blancos a la derecha e izquierda
+
+					#Ahora insertamos el atributo en la base de datos
+					#Buscamos el nombre de la columna a insertar
+					name_row[k] = name_row[k] + attrComment_param[j]['rowName']
+					#Buscamos el valor a insertar en esa columna
+					value_row[k] = value_row[k] + attribute
+					if attrComment_param[j]['rowName'] == ISTEXT:
+						if is_repit(attribute, idProduct):
+							inserts[k] = "No insert"
+
+				j += 1
+				if j == len(attrComment_param):
+					for (k, row) in enumerate(name_row):
+						name_row[k] = name_row[k] + ")"
+						value_row[k] = value_row[k] + "')"
 				else:
-					attribute = row[attrComment_param[j]['tagID']]
+					for (k, row) in enumerate(name_row):
+						name_row[k] = name_row[k] + ", "
+						value_row[k] = value_row[k] + "', '" #Importante las comillas simples para que los espacios funcionen al insertar
 
-				attribute = attribute.replace(",", ".") #Cambiamos las comas por los puntos si las hubiera
-				attribute = attribute.replace("'", "") #Cambiamos las comillas simples por nada
-				attribute = attribute.strip() #Eliminamos espacios en blancos a la derecha e izquierda
+			#Con los string obtenidos creamos la query final
+			for (k, row) in enumerate(name_row):
+				#Si no estan repetidos, insertamos
+				if inserts[k] == "Insert":
+					query = "REPLACE INTO comments(" + name_row[k] + " VALUES (" + value_row[k]
+					if VERBOSE:
+						print("Query comment: " + query)
+					run_query(query) #Ejecutamos la consulta
 
-				#Ahora insertamos el atributo en la base de datos
-				#Buscamos el nombre de la columna a insertar
-				name_row[k] = name_row[k] + attrComment_param[j]['rowName']
-				#Buscamos el valor a insertar en esa columna
-				value_row[k] = value_row[k] + attribute
-				if attrComment_param[j]['rowName'] == ISTEXT:
-					if is_repit(attribute, idProduct):
-						inserts[k] = "No insert"
-
-			j += 1
-			if j == len(attrComment_param):
-				for (k, row) in enumerate(name_row):
-					name_row[k] = name_row[k] + ")"
-					value_row[k] = value_row[k] + "')"
-			else:
-				for (k, row) in enumerate(name_row):
-					name_row[k] = name_row[k] + ", "
-					value_row[k] = value_row[k] + "', '" #Importante las comillas simples para que los espacios funcionen al insertar
-
-		#Con los string obtenidos creamos la query final
-		for (k, row) in enumerate(name_row):
-			#Si no estan repetidos, insertamos
-			if inserts[k] == "Insert":
-				query = "REPLACE INTO comments(" + name_row[k] + " VALUES (" + value_row[k]
-				if VERBOSE:
-					print("Query comment: " + query)
-				run_query(query) #Ejecutamos la consulta
-
-		i += 1 #Pasamos pagina
+			i += 1 #Pasamos pagina
 
 #Comprueba si un comentario ya esta repetido
 def is_repit(comment, idProduct):
