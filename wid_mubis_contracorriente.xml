@@ -1,0 +1,49 @@
+<info>
+	 <charset>utf-8</charset>
+	
+	 <database host="localhost" db="wid_mubis_cc" user="mubis_cc" password="e2eLcsjcbr0lQTuY">
+	 	<rowsProduct rowName="name" type="VARCHAR" size="128"></rowsProduct>
+	 	<rowsProduct rowName="price" type="VARCHAR" size="32"></rowsProduct>
+	 	<rowsProduct rowName="avg" type="VARCHAR" size="32"></rowsProduct>
+
+	 	<rowsComment rowName="nick" type="VARCHAR" size="32"></rowsComment>
+	 	<rowsComment rowName="comment" type="TEXT" size="" isText="true"></rowsComment>
+	 	<rowsComment rowName="rating" type="VARCHAR" size="64"></rowsComment>
+	 	<rowsComment rowName="opVotes" type="VARCHAR" size="64"></rowsComment>
+
+	 </database>
+
+	 <url urlBase="http://www.mubis.es" urlProducts="http://www.mubis.es/distribuidoras/a-contracorriente-films?page={npage_products}" urlComments="http://www.mubis.es{numberproduct}">
+	 </url>
+
+
+
+	 <urlProducts categorypage_max=""> <!-- categorypage_max es la ultima pagina a la que debe llegar -->
+	 	<!--  Indicar como llegar hasta el enlace (atributo href necesario) para cada producto -->
+	 	<linkProduct tag="div" attr="class" valueAttr="cover_thumb_title"></linkProduct>
+	 	<linkProductFinal tag="a" attr="" valueAttr="" attrGoal="href">
+
+	 	<!-- Indicar los atributos que se desean guardar de la web de cada producto -->
+	 	<attributeProducts tag="h1" attr="" valueAttr="" tagID="false" rowName="name"></attributeProducts>
+		<attributeProducts tag="div" attr="class" valueAttr="price" tagID="false" rowName="price"></attributeProducts>
+		<attributeProducts tag="div" attr="class" valueAttr="avg" tagID="false" rowName="avg"></attributeProducts>
+
+
+	 	<!-- Indicar como llegar hasta la ID necesaria para entrar en los comentarios (el numberproduct) -->
+	 	<idProduct tag="div" attr="class" valueAttr="release_opinions"></idProduct>
+	 	<idProduct tag="div" attr="class" valueAttr="data"></idProduct>
+	 	<idProduct tag="div" attr="" valueAttr=""></idProduct>
+	 	<idProductFinal tag="a" attr="" valueAttr="" attrGoal="href"><idProductFinal>
+
+	 <urlProducts/>
+
+
+	 <urlComments>
+	 	<attributeComments tag="img" attr="class" valueAttr="border_img" tagID="alt" rowName="nick"></attributeComments>
+	 	<attributeComments tag="div" attr="class" valueAttr="opinion_header" tagID="false" rowName="rating"></attributeComments>
+		<attributeComments tag="div" attr="class" valueAttr="opinion_votes" tagID="false" rowName="opVotes"></attributeComments>
+		<attributeComments tag="div" attr="class" valueAttr="opinion_content_desc" tagID="false" rowName="comment"></attributeComments>
+
+	 </urlComments>
+</info> 
+ 

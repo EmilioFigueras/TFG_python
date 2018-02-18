@@ -144,9 +144,9 @@ def create_database():
 	if DELETE_TABLE:
 		query = "DROP TABLE IF EXISTS products"
 		run_query(query)
-		query = "CREATE TABLE products(autoid int NOT NULL AUTO_INCREMENT, id int NOT NULL, PRIMARY KEY (autoid), "
+		query = "CREATE TABLE products(autoid int NOT NULL AUTO_INCREMENT, id VARCHAR(128) NOT NULL, PRIMARY KEY (autoid), "
 	else:
-		query = "CREATE TABLE IF NOT EXISTS products(autoid int NOT NULL AUTO_INCREMENT, id int NOT NULL, PRIMARY KEY (autoid), "
+		query = "CREATE TABLE IF NOT EXISTS products(autoid int NOT NULL AUTO_INCREMENT, id VARCHAR(128) NOT NULL, PRIMARY KEY (autoid), "
 	while i < len(attrProduct_param):
 		#if(attrProduct_param[i].has_attr('primaryKey')):
 		#	if(attrProduct_param[i]['primaryKey'] != "" and attrProduct_param[i]['primaryKey'] != "false"):
@@ -175,9 +175,9 @@ def create_database():
 	if DELETE_TABLE:
 		query = "DROP TABLE IF EXISTS comments"
 		run_query(query)
-		query = "CREATE TABLE comments(autoid int NOT NULL AUTO_INCREMENT, PRIMARY KEY (autoid), idProduct int NOT NULL, "
+		query = "CREATE TABLE comments(autoid int NOT NULL AUTO_INCREMENT, PRIMARY KEY (autoid), idProduct VARCHAR(128) NOT NULL, "
 	else:
-		query = "CREATE TABLE IF NOT EXISTS comments(autoid int NOT NULL AUTO_INCREMENT, PRIMARY KEY (autoid), idProduct int NOT NULL, "
+		query = "CREATE TABLE IF NOT EXISTS comments(autoid int NOT NULL AUTO_INCREMENT, PRIMARY KEY (autoid), idProduct VARCHAR(128) NOT NULL, "
 	while i < len(attrComment_param):
 		#Las columnas ID e idProduct se crearan y utilizaran por defecto
 		if attrComment_param[i]['rowName'] != "autoid" and attrComment_param[i]['rowName'] != "idProduct":
@@ -320,9 +320,11 @@ def set_links(urlProducts, urlBase, cat_max, tags, final):
 			except HTTPError as e:
 				print('The server couldn\'t fulfill the request.')
 				print('Error code: ', e.code)
+				numPage += 1 #Pasamos pagina
 			except URLError as e:
 			 	print('We failed to reach a server.')
 			 	print('Reason: ', e.reason)
+			 	numPage += 1 #Pasamos pagina
 			else:
 				j = 1
 				soup = soup.findAll(tags[0]['tag'], {tags[0]['attr']:tags[0]['valueAttr']})
@@ -400,9 +402,17 @@ def link_in(url):
 					print("Attribute: " + attrProduct_param[i]['valueAttr'])
 				soupAttr = soup.find(attrProduct_param[i]['tag'], {attrProduct_param[i]['attr']:attrProduct_param[i]['valueAttr']})
 				if attrProduct_param[i]['tagID'] == "false" or attrProduct_param[i]['tagID'] == "":
-					attribute = soupAttr.get_text()
+					try:
+						attribute = soupAttr.get_text()
+					except AttributeError:
+						attribute = "0"
+						print("Attribute Error with " + attrProduct_param[i]['valueAttr'])
 				else:
-					attribute = soupAttr[attrProduct_param[i]['tagID']]
+					try:
+						attribute = soupAttr[attrProduct_param[i]['tagID']]
+					except AttributeError:
+						attribute = "0"
+						print("Attribute Error with " + attrProduct_param[i]['valueAttr'])
 
 				attribute = attribute.replace(",", ".") #Cambiamos las comas por los puntos si las hubiera
 				attribute = attribute.replace("'", "") #Eliminamos las comillas simples
@@ -425,8 +435,17 @@ def link_in(url):
 					name_row = name_row + ", "
 					value_row = value_row + "', '" #Importante las comillas simples para que los espacios funcionen al insertar
 
-			#Con los string obtenidos creamos la query final
-			query = "REPLACE INTO products(" + name_row + " VALUES (" + value_row
+			#Buscamos si ya se ha introducido este producto
+			query_search = "SELECT autoid FROM products WHERE id = '" + idProduct + "'"
+			res_search = run_query(query_search)
+			if res_search is None:
+				#Con los string obtenidos creamos la query final en caso de que se introduzca por primera vez
+				query = "REPLACE INTO products(" + name_row + " VALUES (" + value_row
+			else:
+				for row in res_search:
+					#Con los string obtenidos creamos la query final en caso de que haya que actualizar
+					query = "REPLACE INTO products(autoid, " + name_row + " VALUES ('" + str(row[0]) + "', " + value_row
+
 			if VERBOSE:
 				print("Query product: " + query)
 			run_query(query) #Ejecutamos la consulta
@@ -442,6 +461,8 @@ def link_comments(idProduct):
 	i = 0
 	endPage = False
 	while not endPage:
+		if urlComments.find("{npage_comments}") == -1:
+			endPage = True
 		url = urlComments.format(npage_comments=str(i), numberproduct=str(idProduct))
 		#Abrimos la web del comentario
 		req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -483,10 +504,17 @@ def link_comments(idProduct):
 				soupAttr = soup.findAll(attrComment_param[j]['tag'], {attrComment_param[j]['attr']:attrComment_param[j]['valueAttr']})
 				for (k, row) in enumerate(soupAttr):
 					if attrComment_param[j]['tagID'] == "false" or attrComment_param[j]['tagID'] == "":
-						attribute = row.get_text()
+						try:
+							attribute = row.get_text()
+						except AttributeError:
+							attribute = "0"
+							print("Attribute Error with " + attrComment_param[j]['valueAttr'])
 					else:
-						attribute = row[attrComment_param[j]['tagID']]
-
+						try:
+							attribute = row[attrComment_param[j]['tagID']]
+						except AttributeError:
+							attribute = "0"
+							print("Attribute Error with " + attrComment_param[j]['valueAttr'])
 					attribute = attribute.replace(",", ".") #Cambiamos las comas por los puntos si las hubiera
 					attribute = attribute.replace("'", "") #Cambiamos las comillas simples por nada
 					attribute = attribute.strip() #Eliminamos espacios en blancos a la derecha e izquierda
@@ -524,7 +552,7 @@ def link_comments(idProduct):
 #Comprueba si un comentario ya esta repetido
 def is_repit(comment, idProduct):
 	"""Check if a comment is repeated."""
-	query = "SELECT autoid FROM comments WHERE idProduct = " + idProduct + " and " + ISTEXT + " LIKE '" + comment + "'"
+	query = "SELECT autoid FROM comments WHERE idProduct = '" + idProduct + "' and " + ISTEXT + " LIKE '" + comment + "'"
 	res = run_query(query)
 	if res is None:
 		return False
