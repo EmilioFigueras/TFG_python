@@ -19,7 +19,7 @@
 
 
 
-	 <urlProducts categorypage_max="3"> <!-- categorypage_max es la ultima pagina a la que debe llegar -->
+	 <urlProducts categorypage_max="5"> <!-- categorypage_max es la ultima pagina a la que debe llegar -->
 	 	<!--  Indicar como llegar hasta el enlace (atributo href necesario) para cada producto -->
 	 	<linkProduct tag="div" attr="class" valueAttr="tarjeta-articulo__elementos-basicos"></linkProduct>
 	 	<linkProduct tag="header" attr="class" valueAttr="tarjeta-articulo__nombre"></linkProduct>

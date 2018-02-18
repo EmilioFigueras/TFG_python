@@ -144,9 +144,9 @@ def create_database():
 	if DELETE_TABLE:
 		query = "DROP TABLE IF EXISTS products"
 		run_query(query)
-		query = "CREATE TABLE products(autoid int NOT NULL AUTO_INCREMENT, id VARCHAR(128) NOT NULL, PRIMARY KEY (autoid), "
+		query = "CREATE TABLE products(autoidP int NOT NULL AUTO_INCREMENT, id VARCHAR(128) NOT NULL, PRIMARY KEY (autoidP), "
 	else:
-		query = "CREATE TABLE IF NOT EXISTS products(autoid int NOT NULL AUTO_INCREMENT, id VARCHAR(128) NOT NULL, PRIMARY KEY (autoid), "
+		query = "CREATE TABLE IF NOT EXISTS products(autoidP int NOT NULL AUTO_INCREMENT, id VARCHAR(128) NOT NULL, PRIMARY KEY (autoidP), "
 	while i < len(attrProduct_param):
 		#if(attrProduct_param[i].has_attr('primaryKey')):
 		#	if(attrProduct_param[i]['primaryKey'] != "" and attrProduct_param[i]['primaryKey'] != "false"):
@@ -436,7 +436,7 @@ def link_in(url):
 					value_row = value_row + "', '" #Importante las comillas simples para que los espacios funcionen al insertar
 
 			#Buscamos si ya se ha introducido este producto
-			query_search = "SELECT autoid FROM products WHERE id = '" + idProduct + "'"
+			query_search = "SELECT autoidP FROM products WHERE id = '" + idProduct + "'"
 			res_search = run_query(query_search)
 			if res_search is None:
 				#Con los string obtenidos creamos la query final en caso de que se introduzca por primera vez
@@ -444,7 +444,7 @@ def link_in(url):
 			else:
 				for row in res_search:
 					#Con los string obtenidos creamos la query final en caso de que haya que actualizar
-					query = "REPLACE INTO products(autoid, " + name_row + " VALUES ('" + str(row[0]) + "', " + value_row
+					query = "REPLACE INTO products(autoidP, " + name_row + " VALUES ('" + str(row[0]) + "', " + value_row
 
 			if VERBOSE:
 				print("Query product: " + query)
@@ -886,7 +886,7 @@ class CompleteTest(TestCase):
 	def test_complete_ok(self):
 		"""Given a complete input file you must fill in the database."""
 		#Comprobamos que la base de datos esta vacia
-		query = "Select count(c.autoid), count(p.autoid) from comments as c join products as p on c.idProduct = p.id"
+		query = "Select count(c.autoid), count(p.autoidP) from comments as c join products as p on c.idProduct = p.id"
 		result = run_query(query)
 		for row in result:
 			count_comment = row[0]
@@ -901,7 +901,7 @@ class CompleteTest(TestCase):
 		main()
 
 		#Volvemos a comprobar el numero de comentarios y productos ahora
-		query = "Select count(c.autoid), count(p.autoid) from comments as c join products as p on c.idProduct = p.id"
+		query = "Select count(c.autoid), count(p.autoidP) from comments as c join products as p on c.idProduct = p.id"
 		result = run_query(query)
 		for row in result:
 			count_comment = row[0]
