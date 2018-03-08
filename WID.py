@@ -8,6 +8,7 @@ from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 import sys
 import os.path
+import time
 import xml.etree.cElementTree as ET #XML Test
 from unittest import TestCase
 import MySQLdb #python3-mysqldb
@@ -28,10 +29,11 @@ VERBOSE = False
 def help_info():
 	"""Help menu."""
 	print("Web Info Download")
-	print("usage: python WID.py [-h] [-v] [-x xPath] [-d] [-c] [-e]")
+	print("usage: python WID.py [-h] [-v] [-t seconds] [-x xPath] [-d] [-c] [-e]")
 	print("Command Summary:")
 	print("-h 		help")
 	print("-v 		verbose mode")
+	print("-t 		time wait (s)")
 	print("-x 		XML file path")
 	print("-d 		default values")
 	print("-c 		create database")
@@ -314,6 +316,10 @@ def set_links(urlProducts, urlBase, cat_max, tags, final):
 			if VERBOSE:
 				print("URL ini: " + url)
 			req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+			if TIME_WAIT > 0:
+				if VERBOSE:
+					print("Sleeping " + str(TIME_WAIT) +" seconds...")
+				time.sleep(TIME_WAIT)
 
 			try:
 				soup = BeautifulSoup(urlopen(req), "html5lib", from_encoding=CHARSET)
@@ -471,14 +477,20 @@ def link_comments(idProduct):
 		except HTTPError as e:
 			print('The server couldn\'t fulfill the request.')
 			print('Error code: ', e.code)
+			i += 1 #Pasamos pagina
 		except URLError as e:
 		 	print('We failed to reach a server.')
 		 	print('Reason: ', e.reason)
+		 	i += 1 #Pasamos pagina
 		else:
 			attrComment_param = XMLFILE.findAll("attributeComments")
 
 			if VERBOSE:
 				print("URL comments: " + url)
+			if TIME_WAIT > 0:
+				if VERBOSE:
+					print("Sleeping " + str(TIME_WAIT) +" seconds...")
+				time.sleep(TIME_WAIT)
 
 			#Inicializamos las listas donde iran las querys
 			name_row = [] #Aqui iran los nombres de las columnas

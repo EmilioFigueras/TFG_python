@@ -13,7 +13,7 @@
 
 	 </database>
 
-	 <url urlBase="http://www.mubis.es" urlProducts="http://www.mubis.es/distribuidoras/a-contracorriente-films?page={npage_products}" urlComments="http://www.mubis.es{numberproduct}">
+	 <url urlBase="http://www.mubis.es" urlProducts="http://www.mubis.es/distribuidoras/a-contracorriente-films?page={npage_products}" urlComments="http://www.mubis.es{numberproduct}?page={npage_comments}">
 	 </url>
 
 

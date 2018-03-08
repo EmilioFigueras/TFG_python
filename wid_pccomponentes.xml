@@ -49,7 +49,7 @@
 	 <urlComments>
 	 	<attributeComments tag="p" attr="class" valueAttr="user-data m-b-0" tagID="false" rowName="nick"></attributeComments>
 	 	<attributeComments tag="div" attr="class" valueAttr="opinion" tagID="false" rowName="comment"></attributeComments>
-	 	<attributeComments tag="input" attr="class" valueAttr="rating-input" tagID="value" rowName="rating"></attributeComments>
+	 	<attributeComments tag="span" attr="class" valueAttr="label label-primary" tagID="false" rowName="rating"></attributeComments>
 	 	<attributeComments tag="p" attr="class" valueAttr="fecha pull-sm-right hidden-sm-down m-b-0" tagID="false" rowName="date"></attributeComments>
 
 	 </urlComments>
