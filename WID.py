@@ -328,9 +328,9 @@ def set_links(urlProducts, urlBase, cat_max, tags, final):
 				print('Error code: ', e.code)
 				numPage += 1 #Pasamos pagina
 			except URLError as e:
-			 	print('We failed to reach a server.')
-			 	print('Reason: ', e.reason)
-			 	numPage += 1 #Pasamos pagina
+				print('We failed to reach a server.')
+				print('Reason: ', e.reason)
+				numPage += 1 #Pasamos pagina
 			else:
 				j = 1
 				soup = soup.findAll(tags[0]['tag'], {tags[0]['attr']:tags[0]['valueAttr']})
@@ -377,8 +377,8 @@ def link_in(url):
 		print('The server couldn\'t fulfill the request.')
 		print('Error code: ', e.code)
 	except URLError as e:
-	 	print('We failed to reach a server.')
-	 	print('Reason: ', e.reason)
+		print('We failed to reach a server.')
+		print('Reason: ', e.reason)
 	else:
 		#Buscamos la ID del producto
 		idsProduct_param = XMLFILE.findAll("idProduct")
@@ -479,9 +479,9 @@ def link_comments(idProduct):
 			print('Error code: ', e.code)
 			i += 1 #Pasamos pagina
 		except URLError as e:
-		 	print('We failed to reach a server.')
-		 	print('Reason: ', e.reason)
-		 	i += 1 #Pasamos pagina
+			print('We failed to reach a server.')
+			print('Reason: ', e.reason)
+			i += 1 #Pasamos pagina
 		else:
 			attrComment_param = XMLFILE.findAll("attributeComments")
 
@@ -595,9 +595,9 @@ class ArgTest(TestCase):
 	"""Testing input arguments."""
 
 	def setUp(self):
-		sys.argv = ['TFG.py', '-x', 'prueba.xml', '-v']
+		sys.argv = ['WID.py', '-x', 'prueba.xml', '-v', '-t', '5']
 
-	#Prueba del modo VERBOSE, de la lectura de ficheros y del modo por defecto
+	#Prueba del modo VERBOSE, de la lectura de ficheros, el tiempo de espera y del modo por defecto
 	def test_params(self):
 		"""Testing verbose mode, reading files and default mode."""
 		i = 0
@@ -608,7 +608,8 @@ class ArgTest(TestCase):
 			i += 1
 		self.assertTrue(VERBOSE)
 		self.assertEqual(XPATH, 'prueba.xml')
-		sys.argv = ['TFG.py', '-d']
+		self.assertEqual(TIME_WAIT, 5)
+		sys.argv = ['WID.py', '-d']
 		i = 0
 		for param in sys.argv:
 			ret = options(param, i)
@@ -617,6 +618,7 @@ class ArgTest(TestCase):
 			i += 1
 		self.assertFalse(VERBOSE)
 		self.assertEqual(XPATH, 'info.xml')
+		self.assertEqual(TIME_WAIT, 0)
 
 	#Se ejecuta despues de cada prueba
 	def tearDown(self):
@@ -630,7 +632,7 @@ class Arg_DatabaseTest(TestCase):
 	def test_db_ok(self):
 		"""Creating and overwriting database with correct data."""
 		#Preparacion de prueba
-		sys.argv = ['TFG.py', '-x', 'test.xml', '-c']
+		sys.argv = ['WID.py', '-x', 'test.xml', '-c']
 		t_info = ET.Element("info")
 		t_charset = ET.SubElement(t_info, "charset")
 		t_charset.text = "utf-8"
@@ -650,7 +652,7 @@ class Arg_DatabaseTest(TestCase):
 		self.assertEqual(cm.exception.code, 0)
 
 		#Sobreescritura de la base de datos
-		sys.argv = ['TFG.py', '-x', 'test.xml', '-e']
+		sys.argv = ['WID.py', '-x', 'test.xml', '-e']
 		with self.assertRaises(SystemExit) as cm:
 			main()
 		self.assertEqual(cm.exception.code, 0)
@@ -662,7 +664,7 @@ class Arg_DatabaseTest(TestCase):
 	#Datos de creacion de base de datos incorrectos y archivo XML no encontrado
 	def test_db_fail(self):
 		"""Creating and overwriting database with wrong data and XML file not found."""
-		sys.argv = ['TFG.py', '-x', 'test_exist.xml', '-c']
+		sys.argv = ['WID.py', '-x', 'test_exist.xml', '-c']
 
 		#Archivo no encontrado
 		with self.assertRaises(SystemExit) as cm:
@@ -670,7 +672,7 @@ class Arg_DatabaseTest(TestCase):
 		self.assertEqual(cm.exception.code, 1)
 
 
-		sys.argv = ['TFG.py', '-x', 'test_2.xml', '-c']
+		sys.argv = ['WID.py', '-x', 'test_2.xml', '-c']
 
 
 		t_info = ET.Element("info")
@@ -700,7 +702,7 @@ class FailTest(TestCase):
 	def test_isText(self):
 		"""Test that XML file contains isText variable."""
 		#Preparacion de prueba
-		sys.argv = ['TFG.py', '-x', 'test.xml']
+		sys.argv = ['WID.py', '-x', 'test.xml']
 		t_info = ET.Element("info")
 		t_charset = ET.SubElement(t_info, "charset")
 		t_charset.text = "utf-8"
@@ -722,7 +724,7 @@ class FailTest(TestCase):
 	def test_urlBase(self):
 		"""Test that XML file contains urlBase variable."""
 		#Preparacion de prueba
-		sys.argv = ['TFG.py', '-x', 'test.xml']
+		sys.argv = ['WID.py', '-x', 'test.xml']
 		t_info = ET.Element("info")
 		t_charset = ET.SubElement(t_info, "charset")
 		t_charset.text = "utf-8"
@@ -746,7 +748,7 @@ class FailTest(TestCase):
 	def test_urlProducts(self):
 		"""Test that XML file contains urlProducts variable."""
 		#Preparacion de prueba
-		sys.argv = ['TFG.py', '-x', 'test.xml']
+		sys.argv = ['WID.py', '-x', 'test.xml']
 		t_info = ET.Element("info")
 		t_charset = ET.SubElement(t_info, "charset")
 		t_charset.text = "utf-8"
@@ -770,7 +772,7 @@ class FailTest(TestCase):
 	def test_urlComments(self):
 		"""Test that XML file contains urlComments variable."""
 		#Preparacion de prueba
-		sys.argv = ['TFG.py', '-x', 'test.xml']
+		sys.argv = ['WID.py', '-x', 'test.xml']
 		t_info = ET.Element("info")
 		t_charset = ET.SubElement(t_info, "charset")
 		t_charset.text = "utf-8"
@@ -814,7 +816,7 @@ class RepitTest(TestCase):
 		arbol.write("test.xml")
 
 		#Creamos la base de datos
-		sys.argv = ['TFG.py', '-x', 'test.xml', "-e"]
+		sys.argv = ['WID.py', '-x', 'test.xml', "-e"]
 		with self.assertRaises(SystemExit) as cm:
 			main()
 		self.assertEqual(cm.exception.code, 0)
@@ -889,7 +891,7 @@ class CompleteTest(TestCase):
 		arbol.write("test.xml")
 
 		#Creamos la base de datos
-		sys.argv = ['TFG.py', '-x', 'test.xml', "-e"]
+		sys.argv = ['WID.py', '-x', 'test.xml', "-e"]
 		with self.assertRaises(SystemExit) as cm:
 			main()
 		self.assertEqual(cm.exception.code, 0)
@@ -909,7 +911,7 @@ class CompleteTest(TestCase):
 		self.assertEqual(count_product, 0)
 
 		#Ejecutamos el programa con el fichero recien creado y activando el modo detallado
-		sys.argv = ['TFG.py', '-v', '-x', 'test.xml']
+		sys.argv = ['WID.py', '-v', '-x', 'test.xml']
 		main()
 
 		#Volvemos a comprobar el numero de comentarios y productos ahora

@@ -1,7 +1,7 @@
 <info>
 	 <charset>iso-8859-15</charset>
 
-	 <database host="localhost" db="wid_prueba" user="wid_prueba_user" password="c5999981d4">
+	 <database host="localhost" db="wid_prueba" user="wid_prueba_user" password="f1454d8931">
 	 	<rowsProduct rowName="name" type="VARCHAR" size="128"></rowsProduct>
 	 	<rowsProduct rowName="date" type="VARCHAR" size="32"></rowsProduct>
 
